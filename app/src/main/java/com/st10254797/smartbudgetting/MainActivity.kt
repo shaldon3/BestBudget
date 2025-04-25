@@ -28,5 +28,13 @@ class MainActivity : AppCompatActivity() {
             val email = firebaseAuth.currentUser?.email
             binding.textViewWelcome.text = "Welcome, $email"
         }
+
+        // Logout button functionality
+        binding.buttonLogout.setOnClickListener {
+            firebaseAuth.signOut()
+            val intent = Intent(this, SignInActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
 }

@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.st10254797.smartbudgetting" />
+                  <option name="mobileSdkAppId" value="1:500573457335:android:49aaeaeb99d4904e613632" />
+                  <option name="projectId" value="smartbudgetting-15b21" />
+                  <option name="projectNumber" value="500573457335" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

@@ -38,4 +38,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp" />
 
+    <TextView
+        android:id="@+id/textViewCategories"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Categories will appear here"
+        android:textSize="18sp"
+        android:textColor="#333333"
+        app:layout_constraintTop_toBottomOf="@id/buttonLogout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

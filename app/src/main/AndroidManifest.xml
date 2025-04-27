@@ -12,27 +12,25 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartBudgetting"
         tools:targetApi="31">
-
+        <activity
+            android:name=".CategoryActivity"
+            android:exported="true" />
         <!-- MainActivity should have the intent filter to be the launcher activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- SignUpActivity doesn't need an intent filter unless it's directly invoked -->
+        </activity> <!-- SignUpActivity doesn't need an intent filter unless it's directly invoked -->
         <activity
             android:name=".SignUpActivity"
-            android:exported="true" />
-
-        <!-- SignInActivity should be exported if it is directly invoked -->
+            android:exported="true" /> <!-- SignInActivity should be exported if it is directly invoked -->
         <activity
             android:name=".SignInActivity"
             android:exported="true" />
-
     </application>
 
 </manifest>

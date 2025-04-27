@@ -1,5 +1,6 @@
 package com.st10254797.smartbudgetting
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -111,6 +112,14 @@ class CategoryActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 binding.textViewCategories.text = categories.joinToString(", ") { it.name }
             }
+        }
+        binding.buttonBackToHome.setOnClickListener {
+            // Create an Intent to navigate back to MainActivity
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+
+            // Optionally, finish the current activity to remove it from the back stack
+            finish()
         }
     }
 }

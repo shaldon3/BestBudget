@@ -48,23 +48,52 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
 
-        // Insert a new category (Example)
-        val newCategory = Category(name = "Groceries")
-        lifecycleScope.launch(Dispatchers.IO) {
-            categoryDao.insert(newCategory)
-            // Optionally show a message
-            withContext(Dispatchers.Main) {
-                Toast.makeText(applicationContext, "Category added", Toast.LENGTH_SHORT).show()
-            }
-        }
-
         // Fetch and display all categories
         lifecycleScope.launch(Dispatchers.IO) {
             val categories = categoryDao.getAllCategories()
             // Update the UI with the categories
             withContext(Dispatchers.Main) {
-                // Assuming you have a TextView to show the categories or use a RecyclerView
                 binding.textViewCategories.text = categories.joinToString(", ") { it.name }
+            }
+        }
+
+        fun updateCategoryList() {
+            lifecycleScope.launch(Dispatchers.IO) {
+                val categories = categoryDao.getAllCategories()
+                withContext(Dispatchers.Main) {
+                    // Update the UI with the categories
+                    binding.textViewCategories.text = categories.joinToString(", ") { it.name }
+                }
+            }
+        }
+
+        // Handle Add Category button click
+        binding.buttonAddCategory.setOnClickListener {
+            val categoryName = binding.editTextCategoryName.text.toString()
+
+            if (categoryName.isNotEmpty()) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    // Check if category already exists
+                    val existingCategory = categoryDao.getCategoryByName(categoryName)
+
+                    if (existingCategory == null) {
+                        val newCategory = Category(name = categoryName)
+                        categoryDao.insert(newCategory)
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(applicationContext, "$categoryName added", Toast.LENGTH_SHORT).show()
+                            binding.editTextCategoryName.text.clear()
+
+                            // Refresh category list
+                            updateCategoryList()
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(applicationContext, "$categoryName already exists", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            } else {
+                Toast.makeText(applicationContext, "Please enter a category name", Toast.LENGTH_SHORT).show()
             }
         }
     }

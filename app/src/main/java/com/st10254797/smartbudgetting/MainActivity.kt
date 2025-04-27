@@ -96,5 +96,35 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(applicationContext, "Please enter a category name", Toast.LENGTH_SHORT).show()
             }
         }
+        binding.buttonDeleteCategory.setOnClickListener {
+            val categoryNameToDelete = binding.editTextCategoryName.text.toString()
+
+            if (categoryNameToDelete.isNotEmpty()) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    // Check if the category exists
+                    val existingCategory = categoryDao.getCategoryByName(categoryNameToDelete)
+
+                    if (existingCategory != null) {
+                        // Delete the category from the database
+                        categoryDao.deleteCategory(categoryNameToDelete)
+
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(applicationContext, "$categoryNameToDelete deleted", Toast.LENGTH_SHORT).show()
+                            binding.editTextCategoryName.text.clear()
+
+                            // Refresh the category list after deletion
+                            updateCategoryList()
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(applicationContext, "$categoryNameToDelete does not exist", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            } else {
+                Toast.makeText(applicationContext, "Please enter a category name to delete", Toast.LENGTH_SHORT).show()
+            }
+        }
+
     }
 }

@@ -1,5 +1,7 @@
 package com.st10254797.smartbudgetting
 
+import kotlinx.coroutines.async
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -9,108 +11,199 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.st10254797.smartbudgetting.databinding.ActivityCategoryBinding
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Suppress("DEPRECATION")
 class CategoryActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityCategoryBinding
     private lateinit var appDatabase: AppDatabase
     private lateinit var categoryDao: CategoryDao
+    private lateinit var expenseDao: ExpenseDao  // Declare expenseDao
+    private val auth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         enableEdgeToEdge()
 
-        val binding = ActivityCategoryBinding.inflate(layoutInflater)
+        binding = ActivityCategoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
 
         appDatabase = AppDatabase.getDatabase(applicationContext)
         categoryDao = appDatabase.categoryDao()
+        expenseDao = appDatabase.expenseDao()  // Initialize expenseDao
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+
+        setupWindowInsets()
+        setupClickListeners()
+        updateCategoryList()
+    }
+
+    private fun setupWindowInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+    }
 
-        updateCategoryList(binding)
+    private fun setupClickListeners() {
+        binding.buttonAddCategory.setOnClickListener { handleAddCategory() }
+        binding.buttonDeleteCategory.setOnClickListener { handleDeleteCategory() }
+        binding.buttonBackToHome.setOnClickListener { navigateToMainActivity() }
+        binding.buttonGoToExpense.setOnClickListener { navigateToExpenseActivity() }
+    }
 
-        binding.buttonAddCategory.setOnClickListener {
-            val categoryName = binding.editTextCategoryName.text.toString()
+    private fun handleAddCategory() {
+        val categoryName = binding.editTextCategoryName.text.toString()
 
-            if (categoryName.isNotEmpty()) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-
-                    // Check if the category already exists for this user
-                    val existingCategory = categoryDao.getCategoryByNameAndUser(categoryName, userId)
-
-                    if (existingCategory == null) {
-                        val newCategory = Category(name = categoryName, userId = userId)
-                        categoryDao.insert(newCategory)
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(applicationContext, "$categoryName added", Toast.LENGTH_SHORT).show()
-                            binding.editTextCategoryName.text.clear()
-
-                            updateCategoryList(binding)
-                        }
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(applicationContext, "$categoryName already exists", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            } else {
-                Toast.makeText(applicationContext, "Please enter a category name", Toast.LENGTH_SHORT).show()
-            }
+        if (categoryName.isEmpty()) {
+            showToast("Please enter a category name")
+            return
         }
 
-        binding.buttonDeleteCategory.setOnClickListener {
-            val categoryNameToDelete = binding.editTextCategoryName.text.toString()
+        lifecycleScope.launch(Dispatchers.IO) {
+            val userId = auth.currentUser?.uid ?: return@launch
+            val existingCategory = categoryDao.getCategoryByNameAndUser(categoryName, userId)
 
-            if (categoryNameToDelete.isNotEmpty()) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-
-                    val existingCategory = categoryDao.getCategoryByNameAndUser(categoryNameToDelete, userId)
-
-                    if (existingCategory != null) {
-                        categoryDao.deleteCategoryByNameAndUser(categoryNameToDelete, userId)
-
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(applicationContext, "$categoryNameToDelete deleted", Toast.LENGTH_SHORT).show()
-                            binding.editTextCategoryName.text.clear()
-
-                            updateCategoryList(binding)
-                        }
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(applicationContext, "$categoryNameToDelete does not exist", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+            if (existingCategory == null) {
+                categoryDao.insert(Category(name = categoryName, userId = userId))
+                withContext(Dispatchers.Main) {
+                    showToast("$categoryName added")
+                    binding.editTextCategoryName.text?.clear()
+                    updateCategoryList()
                 }
             } else {
-                Toast.makeText(applicationContext, "Please enter a category name to delete", Toast.LENGTH_SHORT).show()
+                showToast("$categoryName already exists")
             }
-        }
-
-        binding.buttonBackToHome.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
         }
     }
 
-    private fun updateCategoryList(binding: ActivityCategoryBinding) {
+    private fun handleDeleteCategory() {
+        val categoryName = binding.editTextCategoryName.text.toString()
+
+        if (categoryName.isEmpty()) {
+            showToast("Please enter a category name to delete")
+            return
+        }
+
         lifecycleScope.launch(Dispatchers.IO) {
-            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val userId = auth.currentUser?.uid ?: return@launch
+            val existingCategory = categoryDao.getCategoryByNameAndUser(categoryName, userId)
+
+            if (existingCategory != null) {
+                categoryDao.deleteCategoryByNameAndUser(categoryName, userId)
+                withContext(Dispatchers.Main) {
+                    showToast("$categoryName deleted")
+                    binding.editTextCategoryName.text?.clear()
+                    updateCategoryList()
+                }
+            } else {
+                showToast("$categoryName does not exist")
+            }
+        }
+    }
+
+    private fun navigateToMainActivity() {
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
+    }
+
+    private fun navigateToExpenseActivity() {
+        Intent(this, ExpenseActivity::class.java).apply {
+            binding.editTextCategoryName.text?.toString()?.takeIf { it.isNotEmpty() }?.let {
+                putExtra("category_name", it)  // Passing the category name to ExpenseActivity
+            }
+            startActivityForResult(this, 1)  // Start ExpenseActivity for result
+        }
+    }
+    @SuppressLint("SetTextI18n")
+    private fun updateCategoryList() {
+        val userId = auth.currentUser?.uid ?: return
+
+        lifecycleScope.launch(Dispatchers.IO) {
             val categories = categoryDao.getCategoriesByUser(userId)
 
             withContext(Dispatchers.Main) {
-                binding.textViewCategories.text = categories.joinToString(", ") { it.name }
+                binding.textViewCategories.text = "Loading..."
+                val displayText = StringBuilder()
+
+                if (categories.isEmpty()) {
+                    binding.textViewCategories.text = "No categories found."
+                    return@withContext
+                }
+
+                coroutineScope {
+                    categories.forEachIndexed { index, category ->
+                        launch {
+                            val expenses = fetchExpensesForCategory(userId, category.id)
+
+                            withContext(Dispatchers.Main) {
+                                displayText.append("Category: ${category.name}\n")
+
+                                if (expenses.isEmpty()) {
+                                    displayText.append("  No expenses\n")
+                                } else {
+                                    expenses.forEach { expense ->
+                                        displayText.append("  • R${"%.2f".format(expense.amount)} - ${expense.description}\n")
+                                    }
+                                }
+                                displayText.append("\n")
+
+                                if (index == categories.lastIndex) {
+                                    binding.textViewCategories.text = displayText.toString()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // Add this suspend function
+    private suspend fun fetchExpensesForCategory(userId: String, categoryId: Long): List<Expense> {
+        return withContext(Dispatchers.IO) {
+            expenseDao.getExpensesByCategory(categoryId, userId)
+        }
+    }
+
+//    private fun updateExpensesUI(expenses: List<Expense>) {
+//        // This part will check if the expenses list is empty, and display the appropriate message
+//        val displayText = StringBuilder()
+//
+//        if (expenses.isEmpty()) {
+//            displayText.append("No expenses\n")
+//        } else {
+//            // Proper for-loop to iterate over the expenses list
+//            for (expense in expenses) {
+//                displayText.append("  • ${expense.amount} - ${expense.description}\n")
+//            }
+//        }
+//
+//        binding.textViewCategories.text = displayText.toString()
+//    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            val expenseAdded = data?.getBooleanExtra("expense_added", false) == true
+            if (expenseAdded) {
+                // Delay slightly to allow Firestore to save the expense properly
+                lifecycleScope.launch {
+                    kotlinx.coroutines.delay(500)  // Wait 0.5 second
+                    updateCategoryList()
+                }
             }
         }
     }

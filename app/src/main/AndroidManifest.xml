@@ -13,9 +13,11 @@
         android:theme="@style/Theme.SmartBudgetting"
         tools:targetApi="31">
         <activity
-            android:name=".CategoryActivity"
+            android:name=".ExpenseActivity"
             android:exported="true" />
-        <!-- MainActivity should have the intent filter to be the launcher activity -->
+        <activity
+            android:name=".CategoryActivity"
+            android:exported="true" /> <!-- MainActivity should have the intent filter to be the launcher activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true">

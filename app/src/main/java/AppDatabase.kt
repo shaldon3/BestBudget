@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Category::class], version = 1)
+@Database(entities = [Category::class], version = 2)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun categoryDao(): CategoryDao
@@ -20,7 +20,8 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "smart_budgetting_db"
-                ).build()
+                ) .fallbackToDestructiveMigration() // Automatically reset the database
+                    .build()
                 INSTANCE = instance
                 instance
             }

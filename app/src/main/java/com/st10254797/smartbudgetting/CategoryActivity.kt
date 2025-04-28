@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.firebase.auth.FirebaseAuth
 import com.st10254797.smartbudgetting.databinding.ActivityCategoryBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,44 +22,39 @@ class CategoryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Enable edge-to-edge display
         enableEdgeToEdge()
 
-        // Bind the view with ActivityCategoryBinding (or your layout)
         val binding = ActivityCategoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize Room database and DAO
         appDatabase = AppDatabase.getDatabase(applicationContext)
         categoryDao = appDatabase.categoryDao()
 
-        // Set window insets listener to handle system bars like status bar and navigation bar
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        // Fetch and display all categories
         updateCategoryList(binding)
 
-        // Handle Add Category button click
         binding.buttonAddCategory.setOnClickListener {
             val categoryName = binding.editTextCategoryName.text.toString()
 
             if (categoryName.isNotEmpty()) {
                 lifecycleScope.launch(Dispatchers.IO) {
-                    // Check if category already exists
-                    val existingCategory = categoryDao.getCategoryByName(categoryName)
+                    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+
+                    // Check if the category already exists for this user
+                    val existingCategory = categoryDao.getCategoryByNameAndUser(categoryName, userId)
 
                     if (existingCategory == null) {
-                        val newCategory = Category(name = categoryName)
+                        val newCategory = Category(name = categoryName, userId = userId)
                         categoryDao.insert(newCategory)
                         withContext(Dispatchers.Main) {
                             Toast.makeText(applicationContext, "$categoryName added", Toast.LENGTH_SHORT).show()
                             binding.editTextCategoryName.text.clear()
 
-                            // Refresh category list
                             updateCategoryList(binding)
                         }
                     } else {
@@ -72,24 +68,22 @@ class CategoryActivity : AppCompatActivity() {
             }
         }
 
-        // Handle Delete Category button click
         binding.buttonDeleteCategory.setOnClickListener {
             val categoryNameToDelete = binding.editTextCategoryName.text.toString()
 
             if (categoryNameToDelete.isNotEmpty()) {
                 lifecycleScope.launch(Dispatchers.IO) {
-                    // Check if the category exists
-                    val existingCategory = categoryDao.getCategoryByName(categoryNameToDelete)
+                    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+
+                    val existingCategory = categoryDao.getCategoryByNameAndUser(categoryNameToDelete, userId)
 
                     if (existingCategory != null) {
-                        // Delete the category from the database
-                        categoryDao.deleteCategory(categoryNameToDelete)
+                        categoryDao.deleteCategoryByNameAndUser(categoryNameToDelete, userId)
 
                         withContext(Dispatchers.Main) {
                             Toast.makeText(applicationContext, "$categoryNameToDelete deleted", Toast.LENGTH_SHORT).show()
                             binding.editTextCategoryName.text.clear()
 
-                            // Refresh the category list after deletion
                             updateCategoryList(binding)
                         }
                     } else {
@@ -102,24 +96,22 @@ class CategoryActivity : AppCompatActivity() {
                 Toast.makeText(applicationContext, "Please enter a category name to delete", Toast.LENGTH_SHORT).show()
             }
         }
+
+        binding.buttonBackToHome.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
 
-    // Function to update the category list
     private fun updateCategoryList(binding: ActivityCategoryBinding) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val categories = categoryDao.getAllCategories()
-            // Update the UI with the categories
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val categories = categoryDao.getCategoriesByUser(userId)
+
             withContext(Dispatchers.Main) {
                 binding.textViewCategories.text = categories.joinToString(", ") { it.name }
             }
-        }
-        binding.buttonBackToHome.setOnClickListener {
-            // Create an Intent to navigate back to MainActivity
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-
-            // Optionally, finish the current activity to remove it from the back stack
-            finish()
         }
     }
 }

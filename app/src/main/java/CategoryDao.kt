@@ -22,6 +22,15 @@ interface CategoryDao {
     // Add delete function
     @Query("DELETE FROM categories WHERE name = :name")
     suspend fun deleteCategory(name: String)
+
+    @Query("SELECT * FROM categories WHERE name = :name AND userId = :userId LIMIT 1")
+    suspend fun getCategoryByNameAndUser(name: String, userId: String): Category?
+
+    @Query("DELETE FROM categories WHERE name = :name AND userId = :userId")
+    suspend fun deleteCategoryByNameAndUser(name: String, userId: String)
+
+    @Query("SELECT * FROM categories WHERE userId = :userId")
+    suspend fun getCategoriesByUser(userId: String): List<Category>
 }
 
 

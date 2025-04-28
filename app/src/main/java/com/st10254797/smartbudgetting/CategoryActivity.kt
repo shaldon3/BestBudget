@@ -43,6 +43,11 @@ class CategoryActivity : AppCompatActivity() {
         setupWindowInsets()
         setupClickListeners()
         updateCategoryList()
+
+        binding.buttonRefresh.setOnClickListener {
+            updateCategoryList()
+            Toast.makeText(this, "Refreshing...", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun setupWindowInsets() {

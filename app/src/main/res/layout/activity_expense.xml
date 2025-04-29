@@ -13,7 +13,20 @@
         android:paddingBottom="32dp"
         android:divider="?android:attr/dividerHorizontal"
         android:showDividers="middle"
-        android:dividerPadding="8dp">
+        android:dividerPadding="8dp"
+        android:layout_marginTop="16dp"> <!-- Added marginTop to move everything lower -->
+
+        <!-- Budget Warning at the Top -->
+        <TextView
+            android:id="@+id/budgetWarningTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="14sp"
+            android:visibility="gone"
+            android:text="This expense exceeds your budget!"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp" />
 
         <EditText
             android:id="@+id/amountEditText"
@@ -64,17 +77,6 @@
             android:visibility="gone"
             android:background="@android:color/darker_gray"
             android:contentDescription="Selected image preview" />
-
-        <TextView
-            android:id="@+id/budgetWarningTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@android:color/holo_red_dark"
-            android:textSize="14sp"
-            android:visibility="gone"
-            android:text="This expense exceeds your budget!"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="4dp"/>
 
         <Button
             android:id="@+id/saveExpenseBtn"

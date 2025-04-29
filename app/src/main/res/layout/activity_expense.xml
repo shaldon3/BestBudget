@@ -42,7 +42,7 @@
             android:id="@+id/uploadImageBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Upload Image" />
+            android:text="Upload Image (optional)" />
 
         <!-- Added ImageView for preview -->
         <ImageView

@@ -15,7 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-
 class ExpenseActivity : AppCompatActivity() {
 
     private lateinit var appDatabase: AppDatabase
@@ -41,7 +40,6 @@ class ExpenseActivity : AppCompatActivity() {
         uri?.let {
             // Persist permission so the app can read it later
             contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-
             imageUrl = it.toString()
             Toast.makeText(this, "Image selected successfully", Toast.LENGTH_SHORT).show()
         }
@@ -117,7 +115,13 @@ class ExpenseActivity : AppCompatActivity() {
             val expenses = expenseDao.getExpensesByCategory(categoryId)
 
             withContext(Dispatchers.Main) {
-                val adapter = ExpenseAdapter(this@ExpenseActivity, expenses)
+                val adapter = ExpenseAdapter(
+                    this@ExpenseActivity,
+                    expenses.toMutableList(),
+                    onDeleteClick = { expense ->
+                        deleteExpense(expense)
+                    }
+                )
                 expensesListView.adapter = adapter
             }
         }
@@ -159,6 +163,17 @@ class ExpenseActivity : AppCompatActivity() {
             }
         } else {
             Toast.makeText(this, "User not authenticated.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Method to delete an expense
+    private fun deleteExpense(expense: Expense) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            expenseDao.delete(expense) // Delete the expense from the database
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@ExpenseActivity, "Expense deleted", Toast.LENGTH_SHORT).show()
+                loadExpensesForCategory(selectedCategoryId) // Reload expenses to refresh the list
+            }
         }
     }
 }

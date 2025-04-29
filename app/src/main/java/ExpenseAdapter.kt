@@ -10,7 +10,8 @@ import com.bumptech.glide.Glide
 
 class ExpenseAdapter(
     private val context: Context,
-    private val expenses: List<Expense>
+    private val expenses: MutableList<Expense>, // Use MutableList for modification
+    private val onDeleteClick: (Expense) -> Unit // Callback for delete action
 ) : BaseAdapter() {
 
     override fun getCount(): Int = expenses.size
@@ -28,6 +29,7 @@ class ExpenseAdapter(
         val descriptionView = view.findViewById<TextView>(R.id.expenseDescription)
         val amountView = view.findViewById<TextView>(R.id.expenseAmount)
         val dateView = view.findViewById<TextView>(R.id.expenseDate)
+        val deleteButton = view.findViewById<Button>(R.id.deleteButton) // Reference to the delete button
 
         descriptionView.text = expense.description
         amountView.text = "R${expense.amount}"
@@ -38,6 +40,11 @@ class ExpenseAdapter(
             Glide.with(context).load(Uri.parse(expense.imageUrl)).into(imageView)
         } else {
             imageView.setImageResource(R.drawable.ic_launcher_foreground) // fallback image
+        }
+
+        // Set delete button listener
+        deleteButton.setOnClickListener {
+            onDeleteClick(expense) // Call the delete callback
         }
 
         return view

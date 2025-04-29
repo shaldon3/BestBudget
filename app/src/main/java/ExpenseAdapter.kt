@@ -1,6 +1,7 @@
 package com.st10254797.smartbudgetting
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -29,7 +30,7 @@ class ExpenseAdapter(
         val descriptionView = view.findViewById<TextView>(R.id.expenseDescription)
         val amountView = view.findViewById<TextView>(R.id.expenseAmount)
         val dateView = view.findViewById<TextView>(R.id.expenseDate)
-        val deleteButton = view.findViewById<Button>(R.id.deleteButton) // Reference to the delete button
+        val deleteButton = view.findViewById<Button>(R.id.deleteButton)
 
         descriptionView.text = expense.description
         amountView.text = "R${expense.amount}"
@@ -40,6 +41,13 @@ class ExpenseAdapter(
             Glide.with(context).load(Uri.parse(expense.imageUrl)).into(imageView)
         } else {
             imageView.setImageResource(R.drawable.ic_launcher_foreground) // fallback image
+        }
+
+        // Open full-screen image on tap
+        imageView.setOnClickListener {
+            val intent = Intent(context, ImageViewActivity::class.java)
+            intent.putExtra("imageUrl", expense.imageUrl) // Pass the image URL
+            context.startActivity(intent)
         }
 
         // Set delete button listener

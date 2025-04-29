@@ -33,6 +33,8 @@
         <activity
             android:name=".SignInActivity"
             android:exported="true" />
+        <activity
+            android:name=".ImageViewActivity" />
     </application>
 
 </manifest>

@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="16dp">
 
     <LinearLayout
         android:orientation="vertical"
-        android:padding="16dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="32dp"
+        android:divider="?android:attr/dividerHorizontal"
+        android:showDividers="middle"
+        android:dividerPadding="8dp">
 
         <EditText
             android:id="@+id/amountEditText"
@@ -15,14 +21,16 @@
             android:layout_height="wrap_content"
             android:hint="Amount"
             android:inputType="numberDecimal"
-            android:minHeight="48dp" />
+            android:minHeight="48dp"
+            android:layout_marginTop="12dp" />
 
         <EditText
             android:id="@+id/descriptionEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Description"
-            android:minHeight="48dp" />
+            android:minHeight="48dp"
+            android:layout_marginTop="12dp" />
 
         <EditText
             android:id="@+id/dateEditText"
@@ -30,36 +38,50 @@
             android:layout_height="wrap_content"
             android:hint="Date (yyyy-MM-dd)"
             android:inputType="date"
-            android:minHeight="48dp" />
+            android:minHeight="48dp"
+            android:layout_marginTop="12dp" />
 
         <Spinner
             android:id="@+id/categorySpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp" />
+            android:minHeight="48dp"
+            android:layout_marginTop="12dp" />
 
         <Button
             android:id="@+id/uploadImageBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Upload Image (optional)" />
+            android:text="Upload Image (optional)"
+            android:layout_marginTop="12dp" />
 
-        <!-- Added ImageView for preview -->
         <ImageView
             android:id="@+id/imagePreview"
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:scaleType="centerCrop"
+            android:layout_marginTop="12dp"
             android:visibility="gone"
-            android:contentDescription="Selected image preview"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"/>
+            android:background="@android:color/darker_gray"
+            android:contentDescription="Selected image preview" />
+
+        <TextView
+            android:id="@+id/budgetWarningTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="14sp"
+            android:visibility="gone"
+            android:text="This expense exceeds your budget!"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="4dp"/>
 
         <Button
             android:id="@+id/saveExpenseBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Save Expense" />
+            android:text="Save Expense"
+            android:layout_marginTop="16dp" />
 
         <Button
             android:id="@+id/returnBtn"
@@ -69,10 +91,21 @@
             android:layout_marginTop="16dp"
             android:layout_gravity="center_horizontal" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Expenses"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:layout_marginTop="24dp"
+            android:paddingBottom="8dp" />
+
         <ListView
             android:id="@+id/expensesListView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:divider="@android:color/darker_gray"
+            android:dividerHeight="1dp" />
 
     </LinearLayout>
 </ScrollView>

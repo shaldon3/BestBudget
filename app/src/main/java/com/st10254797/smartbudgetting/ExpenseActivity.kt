@@ -21,6 +21,9 @@ class ExpenseActivity : AppCompatActivity() {
     private lateinit var expenseDao: ExpenseDao
     private lateinit var categoryDao: CategoryDao
 
+    private lateinit var goalDao: GoalDao
+    private lateinit var budgetWarningTextView: TextView
+
     private lateinit var categorySpinner: Spinner
     private lateinit var amountEditText: EditText
     private lateinit var descriptionEditText: EditText
@@ -61,6 +64,9 @@ class ExpenseActivity : AppCompatActivity() {
         categorySpinner = findViewById(R.id.categorySpinner)
         returnBtn = findViewById(R.id.returnBtn)
         expensesListView = findViewById(R.id.expensesListView)
+
+        goalDao = appDatabase.goalDao()
+        budgetWarningTextView = findViewById(R.id.budgetWarningTextView)
 
         setupCategorySpinner()
 
@@ -112,21 +118,46 @@ class ExpenseActivity : AppCompatActivity() {
 
     private fun loadExpensesForCategory(categoryId: Long) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val expenses = expenseDao.getExpensesByCategory(categoryId)
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val expenses = expenseDao.getExpensesByUser(userId) // 👈 All user expenses
+            val total = expenses.sumOf { it.amount }
+            val goal = goalDao.getGoalForUser(userId)
 
             withContext(Dispatchers.Main) {
                 val adapter = ExpenseAdapter(
                     this@ExpenseActivity,
-                    expenses.toMutableList(),
+                    expenses.filter { it.category == categoryId }.toMutableList(),
                     onDeleteClick = { expense ->
                         deleteExpense(expense)
                     }
                 )
                 expensesListView.adapter = adapter
+
+                // 👇 Show warning if over budget
+                if (goal != null) {
+                    when {
+                        total > goal.maxGoal -> {
+                            budgetWarningTextView.visibility = View.VISIBLE
+                            budgetWarningTextView.text = "⚠️ You've exceeded your max budget of ${goal.maxGoal}!"
+                            budgetWarningTextView.setTextColor(resources.getColor(android.R.color.holo_red_dark))
+                        }
+                        total < goal.minGoal -> {
+                            budgetWarningTextView.visibility = View.VISIBLE
+                            budgetWarningTextView.text = "💡 You're below your minimum budget goal of ${goal.minGoal}."
+                            budgetWarningTextView.setTextColor(resources.getColor(android.R.color.holo_blue_dark))
+                        }
+                        else -> {
+                            budgetWarningTextView.visibility = View.VISIBLE
+                            budgetWarningTextView.text = "✅ You're within your budget."
+                            budgetWarningTextView.setTextColor(resources.getColor(android.R.color.holo_green_dark))
+                        }
+                    }
+                } else {
+                    budgetWarningTextView.visibility = View.GONE
+                }
             }
         }
     }
-
     // ✅ Updated to use modern Activity Result API
     private fun pickImage() {
         imagePickerLauncher.launch(arrayOf("image/*"))

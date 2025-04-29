@@ -32,5 +32,4 @@ interface ExpenseDao {
     @Query("SELECT * FROM expenses WHERE category = :categoryId AND userId = :userId")
     suspend fun getExpensesByCategory(categoryId: Long, userId: String): List<Expense>
 
-
 }

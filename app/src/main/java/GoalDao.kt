@@ -13,4 +13,7 @@ interface GoalDao {
 
     @Query("SELECT * FROM goal WHERE userId = :userId LIMIT 1")
     suspend fun getGoal(userId: String): Goal?
+
+    @Query("SELECT * FROM Goal WHERE userId = :userId LIMIT 1")
+    suspend fun getGoalForUser(userId: String): Goal?
 }

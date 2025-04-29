@@ -7,13 +7,14 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
+
 
 class ExpenseActivity : AppCompatActivity() {
 
@@ -31,10 +32,19 @@ class ExpenseActivity : AppCompatActivity() {
     private lateinit var expensesListView: ListView // ListView to display expenses
 
     private var imageUrl: String? = null
-    private var selectedCategoryId: Long = -1 // Changed to Long
+    private var selectedCategoryId: Long = -1
 
-    companion object {
-        private const val IMAGE_PICK_REQUEST_CODE = 1001
+    // ✅ Modern image picker launcher
+    private val imagePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        uri?.let {
+            // Persist permission so the app can read it later
+            contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+            imageUrl = it.toString()
+            Toast.makeText(this, "Image selected successfully", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,7 +62,7 @@ class ExpenseActivity : AppCompatActivity() {
         uploadImageBtn = findViewById(R.id.uploadImageBtn)
         categorySpinner = findViewById(R.id.categorySpinner)
         returnBtn = findViewById(R.id.returnBtn)
-        expensesListView = findViewById(R.id.expensesListView) // Initialize ListView
+        expensesListView = findViewById(R.id.expensesListView)
 
         setupCategorySpinner()
 
@@ -65,7 +75,7 @@ class ExpenseActivity : AppCompatActivity() {
         }
 
         returnBtn.setOnClickListener {
-            finish() // This will close ExpenseActivity and go back to CategoryActivity
+            finish()
         }
     }
 
@@ -73,7 +83,7 @@ class ExpenseActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val userId = FirebaseAuth.getInstance().currentUser?.uid
             if (userId != null) {
-                val categories = categoryDao.getCategoriesByUser(userId) // <- Filter by user
+                val categories = categoryDao.getCategoriesByUser(userId)
                 val categoryNames = categories.map { it.name }
 
                 withContext(Dispatchers.Main) {
@@ -89,8 +99,8 @@ class ExpenseActivity : AppCompatActivity() {
                         override fun onItemSelected(
                             parent: AdapterView<*>, view: View?, position: Int, id: Long
                         ) {
-                            selectedCategoryId = categories[position].id.toLong() // Convert to Long
-                            loadExpensesForCategory(selectedCategoryId) // Load expenses for the selected category
+                            selectedCategoryId = categories[position].id.toLong()
+                            loadExpensesForCategory(selectedCategoryId)
                         }
 
                         override fun onNothingSelected(parent: AdapterView<*>) {
@@ -104,23 +114,18 @@ class ExpenseActivity : AppCompatActivity() {
 
     private fun loadExpensesForCategory(categoryId: Long) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val expenses = expenseDao.getExpensesByCategory(categoryId) // Fetch expenses for selected category
-            val expenseList = expenses.map { "${it.amount} - ${it.description}" }
+            val expenses = expenseDao.getExpensesByCategory(categoryId)
 
             withContext(Dispatchers.Main) {
-                val adapter = ArrayAdapter(
-                    this@ExpenseActivity,
-                    android.R.layout.simple_list_item_1,
-                    expenseList
-                )
-                expensesListView.adapter = adapter // Set the adapter for ListView
+                val adapter = ExpenseAdapter(this@ExpenseActivity, expenses)
+                expensesListView.adapter = adapter
             }
         }
     }
 
+    // ✅ Updated to use modern Activity Result API
     private fun pickImage() {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        startActivityForResult(intent, IMAGE_PICK_REQUEST_CODE)
+        imagePickerLauncher.launch(arrayOf("image/*"))
     }
 
     private fun saveExpense() {
@@ -136,11 +141,11 @@ class ExpenseActivity : AppCompatActivity() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId != null) {
             val newExpense = Expense(
-                id = 0, // Auto-generated ID
+                id = 0,
                 amount = amount,
                 description = description,
                 date = dateString,
-                category = selectedCategoryId, // <-- fixed here
+                category = selectedCategoryId,
                 imageUrl = imageUrl,
                 userId = userId
             )
@@ -154,18 +159,6 @@ class ExpenseActivity : AppCompatActivity() {
             }
         } else {
             Toast.makeText(this, "User not authenticated.", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == IMAGE_PICK_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
-            val pickedImageUri = data.data
-            if (pickedImageUri != null) {
-                imageUrl = pickedImageUri.toString() // <-- save the image URI as String
-                Toast.makeText(this, "Image selected successfully.", Toast.LENGTH_SHORT).show()
-            }
         }
     }
 }

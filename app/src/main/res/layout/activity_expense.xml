@@ -44,12 +44,22 @@
             android:layout_height="wrap_content"
             android:text="Upload Image" />
 
+        <!-- Added ImageView for preview -->
+        <ImageView
+            android:id="@+id/imagePreview"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:contentDescription="Selected image preview"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"/>
+
         <Button
             android:id="@+id/saveExpenseBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Save Expense" />
-
 
         <Button
             android:id="@+id/returnBtn"
@@ -57,8 +67,7 @@
             android:layout_height="wrap_content"
             android:text="Return"
             android:layout_marginTop="16dp"
-            android:layout_gravity="center_horizontal"
-            />
+            android:layout_gravity="center_horizontal" />
 
         <ListView
             android:id="@+id/expensesListView"

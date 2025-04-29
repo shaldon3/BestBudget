@@ -13,6 +13,9 @@
         android:theme="@style/Theme.SmartBudgetting"
         tools:targetApi="31">
         <activity
+            android:name=".GoalSettingsActivity"
+            android:exported="false" />
+        <activity
             android:name=".ExpenseActivity"
             android:exported="true" />
         <activity
@@ -33,8 +36,7 @@
         <activity
             android:name=".SignInActivity"
             android:exported="true" />
-        <activity
-            android:name=".ImageViewActivity" />
+        <activity android:name=".ImageViewActivity" />
     </application>
 
 </manifest>

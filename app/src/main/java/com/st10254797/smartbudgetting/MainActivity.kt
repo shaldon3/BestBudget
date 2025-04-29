@@ -2,6 +2,7 @@ package com.st10254797.smartbudgetting
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.st10254797.smartbudgetting.databinding.ActivityMainBinding
@@ -40,6 +41,12 @@ class MainActivity : AppCompatActivity() {
         // Redirect to CategoryActivity
         binding.buttonManageCategories.setOnClickListener {
             val intent = Intent(this, CategoryActivity::class.java)
+            startActivity(intent)
+        }
+
+        val goalButton = findViewById<Button>(R.id.buttonSetGoals)
+        goalButton.setOnClickListener {
+            val intent = Intent(this, GoalSettingsActivity::class.java)
             startActivity(intent)
         }
 

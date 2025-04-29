@@ -7,9 +7,10 @@ import androidx.room.Query
 
 @Dao
 interface GoalDao {
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdate(goal: Goal)
 
-    @Query("SELECT * FROM Goal WHERE id = 1 LIMIT 1")
-    suspend fun getGoal(): Goal?
+    @Query("SELECT * FROM goal WHERE userId = :userId LIMIT 1")
+    suspend fun getGoal(userId: String): Goal?
 }

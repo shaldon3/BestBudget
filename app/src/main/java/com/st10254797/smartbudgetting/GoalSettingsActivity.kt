@@ -8,6 +8,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -17,6 +18,7 @@ class GoalSettingsActivity : AppCompatActivity() {
     private lateinit var maxGoalInput: EditText
     private lateinit var goalTextView: TextView
     private lateinit var goalDao: GoalDao
+    private lateinit var userId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,13 +32,22 @@ class GoalSettingsActivity : AppCompatActivity() {
         goalTextView = findViewById(R.id.textViewGoalValues)
         val saveButton = findViewById<Button>(R.id.buttonSaveGoals)
 
+        // Get current user's UID from Firebase
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser == null) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+        userId = currentUser.uid
+
         // Initialize Room DAO
         val db = AppDatabase.getDatabase(this)
         goalDao = db.goalDao()
 
-        // Load existing goal and display in both the input fields and the goal bar
+        // Load existing goal
         lifecycleScope.launch(Dispatchers.IO) {
-            val existingGoal = goalDao.getGoal()
+            val existingGoal = goalDao.getGoal(userId)
             runOnUiThread {
                 if (existingGoal != null) {
                     minGoalInput.setText(existingGoal.minGoal.toString())
@@ -48,6 +59,7 @@ class GoalSettingsActivity : AppCompatActivity() {
             }
         }
 
+        // Save goal
         saveButton.setOnClickListener {
             val minGoal = minGoalInput.text.toString().toFloatOrNull()
             val maxGoal = maxGoalInput.text.toString().toFloatOrNull()
@@ -57,15 +69,14 @@ class GoalSettingsActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val goal = Goal(id = 1, minGoal = minGoal, maxGoal = maxGoal) // Fixed ID = 1 for single-row
+            val goal = Goal(userId = userId, minGoal = minGoal, maxGoal = maxGoal)
 
-            // Save to Room and update goal bar text
             lifecycleScope.launch(Dispatchers.IO) {
                 goalDao.insertOrUpdate(goal)
                 runOnUiThread {
                     Toast.makeText(this@GoalSettingsActivity, "Goals saved successfully!", Toast.LENGTH_SHORT).show()
                     goalTextView.text = "Min: R${minGoal} | Max: R${maxGoal}"
-                    finish() // Optional: remove this line if you want to stay on page
+                    finish()
                 }
             }
         }

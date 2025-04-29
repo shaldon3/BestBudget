@@ -1,26 +1,52 @@
 package com.st10254797.smartbudgetting
 
-import android.content.Context
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class GoalSettingsActivity : AppCompatActivity() {
+
+    private lateinit var minGoalInput: EditText
+    private lateinit var maxGoalInput: EditText
+    private lateinit var goalTextView: TextView
+    private lateinit var goalDao: GoalDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_goal_settings)
 
-        // Enable back button in ActionBar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "Set Spending Goals"
 
-        val minGoalInput = findViewById<EditText>(R.id.editTextMinGoal)
-        val maxGoalInput = findViewById<EditText>(R.id.editTextMaxGoal)
+        minGoalInput = findViewById(R.id.editTextMinGoal)
+        maxGoalInput = findViewById(R.id.editTextMaxGoal)
+        goalTextView = findViewById(R.id.textViewGoalValues)
         val saveButton = findViewById<Button>(R.id.buttonSaveGoals)
+
+        // Initialize Room DAO
+        val db = AppDatabase.getDatabase(this)
+        goalDao = db.goalDao()
+
+        // Load existing goal and display in both the input fields and the goal bar
+        lifecycleScope.launch(Dispatchers.IO) {
+            val existingGoal = goalDao.getGoal()
+            runOnUiThread {
+                if (existingGoal != null) {
+                    minGoalInput.setText(existingGoal.minGoal.toString())
+                    maxGoalInput.setText(existingGoal.maxGoal.toString())
+                    goalTextView.text = "Min: R${existingGoal.minGoal} | Max: R${existingGoal.maxGoal}"
+                } else {
+                    goalTextView.text = "No goals set yet"
+                }
+            }
+        }
 
         saveButton.setOnClickListener {
             val minGoal = minGoalInput.text.toString().toFloatOrNull()
@@ -31,19 +57,20 @@ class GoalSettingsActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val sharedPref = getSharedPreferences("BudgetGoals", Context.MODE_PRIVATE)
-            with(sharedPref.edit()) {
-                putFloat("minGoal", minGoal)
-                putFloat("maxGoal", maxGoal)
-                apply()
-            }
+            val goal = Goal(id = 1, minGoal = minGoal, maxGoal = maxGoal) // Fixed ID = 1 for single-row
 
-            Toast.makeText(this, "Goals saved successfully!", Toast.LENGTH_SHORT).show()
-            finish() // Go back to previous screen
+            // Save to Room and update goal bar text
+            lifecycleScope.launch(Dispatchers.IO) {
+                goalDao.insertOrUpdate(goal)
+                runOnUiThread {
+                    Toast.makeText(this@GoalSettingsActivity, "Goals saved successfully!", Toast.LENGTH_SHORT).show()
+                    goalTextView.text = "Min: R${minGoal} | Max: R${maxGoal}"
+                    finish() // Optional: remove this line if you want to stay on page
+                }
+            }
         }
     }
 
-    // Handle ActionBar back button
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
             finish()

@@ -5,11 +5,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Category::class, Expense::class], version = 3, exportSchema = false)
+@Database(entities = [Category::class, Expense::class, Goal::class], version = 4, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun categoryDao(): CategoryDao
-    abstract fun expenseDao(): ExpenseDao  // Add ExpenseDao here
+    abstract fun expenseDao(): ExpenseDao
+    abstract fun goalDao(): GoalDao  // Add GoalDao
 
     companion object {
         @Volatile
@@ -22,7 +23,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "smart_budgetting_db"
                 )
-                    .fallbackToDestructiveMigration() // Automatically reset the database
+                    .fallbackToDestructiveMigration() // Automatically reset the database on schema changes
                     .build()
                 INSTANCE = instance
                 instance

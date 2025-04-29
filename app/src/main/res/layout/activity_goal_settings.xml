@@ -10,6 +10,36 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- Goals Display Bar -->
+        <LinearLayout
+            android:id="@+id/goalBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#E0F7FA"
+            android:padding="16dp"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:id="@+id/textViewGoalHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Current Spending Goals"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textColor="#00796B" />
+
+            <TextView
+                android:id="@+id/textViewGoalValues"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Min: R0.00 | Max: R0.00"
+                android:textSize="16sp"
+                android:textColor="#004D40"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <!-- Existing Content -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

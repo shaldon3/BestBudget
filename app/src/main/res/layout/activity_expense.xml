@@ -73,18 +73,11 @@
 
             <Button
                 android:id="@+id/saveExpenseBtn"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:layout_weight="1"
                 android:text="Save Expense"
                 android:layout_marginEnd="4dp"/>
 
-            <Button
-                android:id="@+id/returnBtn"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="Return"/>
         </LinearLayout>
 
         <!-- Expenses List -->
@@ -170,6 +163,22 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:text="Clear"/>
+        </LinearLayout>
+
+        <!-- Return Button (Moved Below Filters) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/returnBtn"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="Return"
+                android:backgroundTint="@android:color/holo_blue_light" />
         </LinearLayout>
 
     </LinearLayout>

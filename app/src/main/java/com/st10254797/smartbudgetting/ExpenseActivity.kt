@@ -14,13 +14,15 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ExpenseActivity : AppCompatActivity() {
 
     private lateinit var appDatabase: AppDatabase
     private lateinit var expenseDao: ExpenseDao
     private lateinit var categoryDao: CategoryDao
-
     private lateinit var goalDao: GoalDao
     private lateinit var budgetWarningTextView: TextView
 
@@ -32,6 +34,10 @@ class ExpenseActivity : AppCompatActivity() {
     private lateinit var uploadImageBtn: Button
     private lateinit var returnBtn: Button
     private lateinit var expensesListView: ListView // ListView to display expenses
+
+    private lateinit var startDateEditText: EditText
+    private lateinit var endDateEditText: EditText
+    private lateinit var filterDateButton: Button
 
     private var imageUrl: String? = null
     private var selectedCategoryId: Long = -1
@@ -65,6 +71,10 @@ class ExpenseActivity : AppCompatActivity() {
         returnBtn = findViewById(R.id.returnBtn)
         expensesListView = findViewById(R.id.expensesListView)
 
+        startDateEditText = findViewById(R.id.startDateEditText)
+        endDateEditText = findViewById(R.id.endDateEditText)
+        filterDateButton = findViewById(R.id.filterDateButton)
+
         goalDao = appDatabase.goalDao()
         budgetWarningTextView = findViewById(R.id.budgetWarningTextView)
 
@@ -76,6 +86,10 @@ class ExpenseActivity : AppCompatActivity() {
 
         saveExpenseBtn.setOnClickListener {
             saveExpense()
+        }
+
+        filterDateButton.setOnClickListener {
+            filterExpensesByDate()
         }
 
         returnBtn.setOnClickListener {
@@ -119,7 +133,7 @@ class ExpenseActivity : AppCompatActivity() {
     private fun loadExpensesForCategory(categoryId: Long) {
         lifecycleScope.launch(Dispatchers.IO) {
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-            val expenses = expenseDao.getExpensesByUser(userId) // 👈 All user expenses
+            val expenses = expenseDao.getExpensesByUser(userId) // Get all user expenses
             val total = expenses.sumOf { it.amount }
             val goal = goalDao.getGoalForUser(userId)
 
@@ -127,13 +141,11 @@ class ExpenseActivity : AppCompatActivity() {
                 val adapter = ExpenseAdapter(
                     this@ExpenseActivity,
                     expenses.filter { it.category == categoryId }.toMutableList(),
-                    onDeleteClick = { expense ->
-                        deleteExpense(expense)
-                    }
+                    onDeleteClick = { expense -> deleteExpense(expense) }
                 )
                 expensesListView.adapter = adapter
 
-                // 👇 Show warning if over budget
+                // Show budget warning
                 if (goal != null) {
                     when {
                         total > goal.maxGoal -> {
@@ -158,6 +170,7 @@ class ExpenseActivity : AppCompatActivity() {
             }
         }
     }
+
     // ✅ Updated to use modern Activity Result API
     private fun pickImage() {
         imagePickerLauncher.launch(arrayOf("image/*"))
@@ -205,6 +218,53 @@ class ExpenseActivity : AppCompatActivity() {
                 Toast.makeText(this@ExpenseActivity, "Expense deleted", Toast.LENGTH_SHORT).show()
                 loadExpensesForCategory(selectedCategoryId) // Reload expenses to refresh the list
             }
+        }
+    }
+
+    // Method to filter expenses by date range
+    private fun filterExpensesByDate() {
+        val startDate = startDateEditText.text.toString()
+        val endDate = endDateEditText.text.toString()
+
+        if (startDate.isEmpty() || endDate.isEmpty()) {
+            Toast.makeText(this, "Please enter both start and end dates", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Parse dates to ensure they're in the right format (e.g., yyyy-MM-dd)
+        try {
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val startDateParsed = dateFormat.parse(startDate)
+            val endDateParsed = dateFormat.parse(endDate)
+
+            if (startDateParsed == null || endDateParsed == null) {
+                Toast.makeText(this, "Invalid date format. Please use yyyy-MM-dd.", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                val expenses = expenseDao.getExpensesByUser(userId) // Get all user expenses
+
+                // Filter expenses by the selected date range and category
+                val filteredExpenses = expenses.filter {
+                    val expenseDate = dateFormat.parse(it.date)
+                    expenseDate != null && !expenseDate.before(startDateParsed) && !expenseDate.after(endDateParsed)
+                }
+
+                withContext(Dispatchers.Main) {
+                    // Update the ListView with filtered expenses
+                    val adapter = ExpenseAdapter(
+                        this@ExpenseActivity,
+                        filteredExpenses.toMutableList(),
+                        onDeleteClick = { expense -> deleteExpense(expense) }
+                    )
+                    expensesListView.adapter = adapter
+                }
+            }
+
+        } catch (e: ParseException) {
+            Toast.makeText(this, "Error parsing dates", Toast.LENGTH_SHORT).show()
         }
     }
 }

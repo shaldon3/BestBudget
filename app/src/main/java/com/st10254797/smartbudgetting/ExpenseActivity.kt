@@ -78,6 +78,8 @@ class ExpenseActivity : AppCompatActivity() {
         goalDao = appDatabase.goalDao()
         budgetWarningTextView = findViewById(R.id.budgetWarningTextView)
 
+        val clearFilterButton: Button = findViewById(R.id.clearFilterButton)
+
         setupCategorySpinner()
 
         uploadImageBtn.setOnClickListener {
@@ -90,6 +92,9 @@ class ExpenseActivity : AppCompatActivity() {
 
         filterDateButton.setOnClickListener {
             filterExpensesByDate()
+        }
+        clearFilterButton.setOnClickListener {
+            clearExpenseFilter()
         }
 
         returnBtn.setOnClickListener {
@@ -266,5 +271,13 @@ class ExpenseActivity : AppCompatActivity() {
         } catch (e: ParseException) {
             Toast.makeText(this, "Error parsing dates", Toast.LENGTH_SHORT).show()
         }
+    }
+    private fun clearExpenseFilter() {
+        // Clear the date fields
+        startDateEditText.text.clear()
+        endDateEditText.text.clear()
+
+        // Reload all expenses without any filter
+        loadExpensesForCategory(selectedCategoryId)
     }
 }

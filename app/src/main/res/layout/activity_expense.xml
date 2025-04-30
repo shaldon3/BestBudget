@@ -14,7 +14,7 @@
         android:divider="?android:attr/dividerHorizontal"
         android:showDividers="middle"
         android:dividerPadding="8dp"
-        android:layout_marginTop="8dp"> <!-- Reduced marginTop to move everything up -->
+        android:layout_marginTop="8dp">
 
         <!-- Budget Warning at the Top -->
         <TextView
@@ -26,7 +26,7 @@
             android:visibility="gone"
             android:text="This expense exceeds your budget!"
             android:layout_marginTop="4dp"
-            android:layout_marginBottom="8dp" /> <!-- Reduced bottom margin -->
+            android:layout_marginBottom="8dp" />
 
         <EditText
             android:id="@+id/amountEditText"
@@ -35,7 +35,7 @@
             android:hint="Amount"
             android:inputType="numberDecimal"
             android:minHeight="48dp"
-            android:layout_marginTop="8dp" /> <!-- Reduced marginTop -->
+            android:layout_marginTop="8dp" />
 
         <EditText
             android:id="@+id/descriptionEditText"
@@ -127,12 +127,27 @@
             android:inputType="date"
             android:minHeight="48dp" />
 
-        <Button
-            android:id="@+id/filterDateButton"
-            android:layout_width="wrap_content"
+        <!-- Centered horizontal container for filter buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Filter by Date"
-            android:layout_marginTop="12dp"/>
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/filterDateButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Filter by Date"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/clearFilterButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Clear Filter"/>
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

@@ -226,7 +226,6 @@ class ExpenseActivity : AppCompatActivity() {
         }
     }
 
-    // Method to filter expenses by date range
     private fun filterExpensesByDate() {
         val startDate = startDateEditText.text.toString()
         val endDate = endDateEditText.text.toString()
@@ -236,7 +235,6 @@ class ExpenseActivity : AppCompatActivity() {
             return
         }
 
-        // Parse dates to ensure they're in the right format (e.g., yyyy-MM-dd)
         try {
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val startDateParsed = dateFormat.parse(startDate)
@@ -249,22 +247,26 @@ class ExpenseActivity : AppCompatActivity() {
 
             lifecycleScope.launch(Dispatchers.IO) {
                 val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-                val expenses = expenseDao.getExpensesByUser(userId) // Get all user expenses
+                val expenses = expenseDao.getExpensesByUser(userId)
 
-                // Filter expenses by the selected date range and category
                 val filteredExpenses = expenses.filter {
                     val expenseDate = dateFormat.parse(it.date)
                     expenseDate != null && !expenseDate.before(startDateParsed) && !expenseDate.after(endDateParsed)
                 }
 
+                // Group expenses by category and calculate totals
+                val categoryTotals = calculateCategoryTotals(filteredExpenses)
+
                 withContext(Dispatchers.Main) {
-                    // Update the ListView with filtered expenses
                     val adapter = ExpenseAdapter(
                         this@ExpenseActivity,
                         filteredExpenses.toMutableList(),
                         onDeleteClick = { expense -> deleteExpense(expense) }
                     )
                     expensesListView.adapter = adapter
+
+                    // Display the category totals
+                    displayCategoryTotals(categoryTotals)
                 }
             }
 
@@ -280,4 +282,30 @@ class ExpenseActivity : AppCompatActivity() {
         // Reload all expenses without any filter
         loadExpensesForCategory(selectedCategoryId)
     }
+    private suspend fun calculateCategoryTotals(expenses: List<Expense>): Map<String, Double> {
+        val categoryTotals = mutableMapOf<String, Double>()
+        val categories = categoryDao.getAllCategories() // Get all categories
+
+        for (expense in expenses) {
+            // Find the category name by ID
+            val categoryName = categories.find { it.id == expense.category }?.name ?: "Unknown"
+            categoryTotals[categoryName] = categoryTotals.getOrDefault(categoryName, 0.0) + expense.amount
+        }
+
+        return categoryTotals
+    }
+    private fun displayCategoryTotals(categoryTotals: Map<String, Double>) {
+        val categoryTotalsLayout: LinearLayout = findViewById(R.id.categoryTotalsLayout)
+
+        // Clear any existing totals
+        categoryTotalsLayout.removeAllViews()
+
+        // Display the totals for each category
+        for ((category, totalAmount) in categoryTotals) {
+            val textView = TextView(this)
+            textView.text = "$category: $%.2f".format(totalAmount)
+            categoryTotalsLayout.addView(textView)
+        }
+    }
+
 }

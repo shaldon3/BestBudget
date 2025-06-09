@@ -64,21 +64,25 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation("androidx.activity:activity-ktx:1.7.2")
 
+    // ✅ Chart library
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
     // Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-database-ktx") // ✅ Add this for Realtime Database support
 
-    // Credentials & Google ID
+    // Google Credentials & Sign-in
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
 
-    // Glide
+    // Glide (image loading)
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
-    // Room
+    // Room Database
     val room_version = "2.6.1"
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")

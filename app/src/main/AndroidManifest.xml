@@ -37,6 +37,9 @@
             android:name=".SignInActivity"
             android:exported="true" />
         <activity android:name=".ImageViewActivity" />
+
+        <activity android:name=".AddExpenseActivity" />
+
     </application>
 
 </manifest>

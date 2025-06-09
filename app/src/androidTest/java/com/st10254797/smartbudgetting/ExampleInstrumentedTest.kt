@@ -1,4 +1,4 @@
-package com.st10254797.smartbudgetting
+package com.st10389947.smartbudgetting
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.st10254797.smartbudgetting", appContext.packageName)
+        assertEquals("com.st10389947.smartbudgetting", appContext.packageName)
     }
 }

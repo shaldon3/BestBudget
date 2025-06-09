@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.st10254797.smartbudgetting" />
-                  <option name="mobileSdkAppId" value="1:500573457335:android:49aaeaeb99d4904e613632" />
-                  <option name="projectId" value="smartbudgetting-15b21" />
-                  <option name="projectNumber" value="500573457335" />
+                  <option name="mobileSdkAppId" value="1:109416889378:android:2e8db686aa347b4df6de7b" />
+                  <option name="projectId" value="bestbudgetapp-23afb" />
+                  <option name="projectNumber" value="109416889378" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

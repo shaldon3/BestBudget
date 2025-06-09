@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/green"
+    android:background="#9D85BA"
     tools:context=".SignInActivity">
 
     <!-- Welcome Text -->
@@ -13,7 +13,7 @@
         android:id="@+id/welcomeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Welcome,\nSign in to continue"
+        android:text="Welcome to BestBudget,\nSign in to continue"
         android:textSize="28sp"
         android:textColor="@android:color/black"
         android:textStyle="bold"
@@ -106,7 +106,7 @@
         android:layout_marginTop="32dp"
         android:background="@color/white"
         android:text="Sign In"
-        android:textColor="#43A047"
+        android:textColor="#050505"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

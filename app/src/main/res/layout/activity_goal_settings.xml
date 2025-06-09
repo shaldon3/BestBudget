@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FAFAFA"
+    android:background="#C5ABDC"
     android:padding="24dp">
 
     <LinearLayout
@@ -77,7 +77,7 @@
             android:layout_height="wrap_content"
             android:text="Save Goals"
             android:layout_marginTop="24dp"
-            android:backgroundTint="#4CAF50"
+            android:backgroundTint="#9266B8"
             android:textColor="#FFFFFF"
             android:elevation="4dp" />
     </LinearLayout>
